@@ -1,30 +1,33 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const routes = require('./routes');
 
+const PORT = process.env.PORT || 3001;
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// Connect to MongoDB
-mongoose.connect('mongodb://localhost/social-network', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  useCreateIndex: true,
-  useFindAndModify: false,
-});
-
-// Middleware
+// Define middleware here
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// API Routes
-const userRoutes = require('./routes/user-routes');
-const thoughtRoutes = require('./routes/thought-routes');
-const reactionRoutes = require('./routes/reaction-routes');
+// Serve up static assets (usually on heroku)
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static("client/build"));
+}
 
-app.use('/api/users', userRoutes);
-app.use('/api/thoughts', thoughtRoutes);
-app.use('/api/thoughts/:thoughtId/reactions', reactionRoutes);
+// Add routes, both API and view
+app.use(routes);
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+// Connect to the Mongo DB
+mongoose.connect(
+  process.env.MONGODB_URI || 'mongodb://localhost/myDatabase',
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true,
+    useFindAndModify: false
+  }
+);
+
+app.listen(PORT, function() {
+  console.log(`🌎  ==> API Server now listening on PORT ${PORT}!`);
 });
